@@ -1,0 +1,3 @@
+#!/bin/sh
+
+protoc src/test/protobuf/person.proto --java_out=src/test/java

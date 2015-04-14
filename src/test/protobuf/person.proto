@@ -1,0 +1,18 @@
+package olle;
+
+option java_package = "olle.proto";
+option java_outer_classname = "PersonProto";
+option optimize_for = SPEED;
+
+// ------------------------------------------------------------------------
+//  Run 'build.proto' from the project's root directory for compilation
+// ------------------------------------------------------------------------
+
+message PersonMessage {
+    optional string firstName = 1;
+    optional string lastName = 2;
+    repeated string middleName = 3;
+    optional int32 age = 4;
+    optional string emailAddress = 5;
+    optional bytes password = 6;
+}
