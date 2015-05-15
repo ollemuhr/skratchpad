@@ -17,9 +17,10 @@ public interface ToString<T> {
 
     default String getName() {
         final String fullName = this.getClass().getName();
-        return (fullName.lastIndexOf('$') != fullName.indexOf('$')) ?
+        final String name = (fullName.lastIndexOf('$') != fullName.indexOf('$')) ?
                 fullName.substring(fullName.indexOf('$') + 1, fullName.lastIndexOf('$')) :
                 fullName.substring(fullName.lastIndexOf('.') + 1, fullName.lastIndexOf('$'));
+        return name;
     }
 
     Stream<Function<T, ?>> props();

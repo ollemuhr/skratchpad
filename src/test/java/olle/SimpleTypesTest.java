@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,9 +16,9 @@ import static org.junit.Assert.assertNotEquals;
 
 public class SimpleTypesTest {
 
-    private Person person1 = Person.create(FirstName.of("Olle"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Age.of(46), Password.of(new byte[]{(byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 1}), EmailAddress.of("o@m.se"));
-    private Person person2 = Person.create(FirstName.of("Nisse"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Age.of(46), Password.of(new byte[]{0x1}), EmailAddress.of("o@m.se"));
-    private Person person3 = Person.create(FirstName.of("Olle"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Age.of(46), Password.of(new byte[]{(byte) 0xAB, (byte)0xCD, (byte)0xEF, 1}), EmailAddress.of("o@m.se"));
+    private Person person1 = Person.create(FirstName.of("Olle"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Optional.of(Age.of(46)), Password.of(new byte[]{(byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 1}), EmailAddress.of("o@m.se"));
+    private Person person2 = Person.create(FirstName.of("Nisse"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Optional.of(Age.of(46)), Password.of(new byte[]{0x1}), EmailAddress.of("o@m.se"));
+    private Person person3 = Person.create(FirstName.of("Olle"), LastName.of("Muhr"), MiddleNames.of(singletonList(MiddleName.of("Karl"))), Optional.of(Age.of(46)), Password.of(new byte[]{(byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 1}), EmailAddress.of("o@m.se"));
 
     @Test
     public void testOf() {
@@ -55,9 +56,13 @@ public class SimpleTypesTest {
     @Test
     public void testValid() {
         assertEquals(0, person1.validate().count());
-        Person invalid = Person.create(FirstName.of("Oll"), LastName.of("Mur"), MiddleNames.of(singletonList(MiddleName.of("Kal"))), Age.of(4), Password.of(new byte[]{2}), EmailAddress.of("om.se"));
+        Person invalid = Person.create(FirstName.of("Oll"), LastName.of("Mur"), MiddleNames.of(singletonList(MiddleName.of("Kal"))), Optional.of(Age.of(4)), Password.of(new byte[]{2}), EmailAddress.of("om.se"));
         invalid.validate().forEach(System.out::println);
         assertEquals(5, invalid.validate().count());
+        Person p = Person.create(Person.OLLE.firstName(), Person.OLLE.lastName(), Person.OLLE.middleNames(), Optional.empty(), Person.OLLE.password(), Person.OLLE.emailAddress());
+        p.validate().forEach(System.out::println);
+        System.out.println(p.toString());
+
     }
 
     @Test

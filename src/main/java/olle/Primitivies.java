@@ -2,6 +2,9 @@ package olle;
 
 import javax.xml.bind.DatatypeConverter;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  *
@@ -27,5 +30,8 @@ public interface Primitivies {
         default Object hasher(Object prop) {
             return Arrays.hashCode((byte[]) prop);
         }
+    }
+
+    interface OptionalType<T> extends SimpleType<Optional<T>> {
     }
 }

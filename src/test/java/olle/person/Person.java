@@ -4,17 +4,18 @@ import olle.*;
 import olle.Primitivies.ByteArrayType;
 import olle.Primitivies.IntegerType;
 import olle.ValidationError.ErrorCode;
-import olle.StringType;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -25,7 +26,7 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
             FirstName.of("Olle"),
             LastName.of("Muhr"),
             MiddleNames.of(singletonList(MiddleName.of("Karl"))),
-            Age.of(Period.between(LocalDate.of(1969, 6, 19), LocalDate.now()).getYears()),
+            Optional.of(Age.of(Period.between(LocalDate.of(1969, 6, 19), LocalDate.now()).getYears())),
             Password.of(new byte[]{(byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 1}), EmailAddress.of("ollmuh@fareoffice.com"));
 
     FirstName firstName();
@@ -34,7 +35,7 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
 
     MiddleNames middleNames();
 
-    Age age();
+    Optional<Age> age();
 
     EmailAddress emailAddress();
 
@@ -45,10 +46,18 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
     }
 
     default Stream<ValidationError> validate() {
-        return props().flatMap(p -> ((SimpleType<?>) p.apply(this)).validate());
+        return Stream.concat(
+                props().filter(p -> p.apply(this) instanceof Optional)
+                        .flatMap(p -> ((Optional<SimpleType<?>>) p.apply(this)).map(p1 -> p1.validate()).orElse(Stream.empty())),
+                props().filter(p -> p.apply(this) instanceof SimpleType).flatMap(p -> ((SimpleType<?>) p.apply(this)).validate()));
     }
 
-    static Person create(FirstName firstName, LastName lastName, MiddleNames middleNames, Age age, Password password, EmailAddress emailAddress) {
+    static Person create(FirstName firstName, LastName lastName, MiddleNames middleNames, Optional<Age> age, Password password, EmailAddress emailAddress) {
+        requireNonNull(firstName);
+        requireNonNull(lastName);
+        requireNonNull(age);
+        requireNonNull(password);
+        requireNonNull(emailAddress);
         abstract class P extends Value<Person> implements Person {
         }
         return new P() {
@@ -68,7 +77,7 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
             }
 
             @Override
-            public Age age() {
+            public Optional<Age> age() {
                 return age;
             }
 
@@ -84,12 +93,11 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         };
     }
 
-    interface FirstName extends StringType {
-        abstract class FN extends Value implements FirstName {
-        }
+    abstract class FirstName extends Value<SimpleType<String>> implements StringType {
 
-        static FirstName of(String value) {
-            return new FN() {
+        public static FirstName of(String value) {
+            requireNonNull(value);
+            return new FirstName() {
                 @Override
                 public String value() {
                     return value;
@@ -105,12 +113,11 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         }
     }
 
-    interface LastName extends StringType {
-        abstract class LN extends Value implements LastName {
-        }
+    abstract class LastName extends Value<SimpleType<String>> implements StringType {
 
-        static LastName of(String value) {
-            return new LN() {
+        public static LastName of(String value) {
+            requireNonNull(value);
+            return new LastName() {
                 @Override
                 public String value() {
                     return value;
@@ -127,12 +134,11 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         }
     }
 
-    interface MiddleName extends StringType {
-        abstract class MN extends Value implements MiddleName {
-        }
+    abstract class MiddleName extends Value<SimpleType<String>> implements StringType {
 
-        static MiddleName of(String value) {
-            return new MN() {
+        public static MiddleName of(String value) {
+            requireNonNull(value);
+            return new MiddleName() {
                 @Override
                 public String value() {
                     return value;
@@ -148,32 +154,39 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         }
     }
 
-    interface MiddleNames extends SimpleType<List<MiddleName>> {
-        abstract class MN extends Value implements MiddleNames {
+    abstract class MiddleNames extends Value<SimpleType<List<MiddleName>>> implements SimpleType<List<MiddleName>> {
+
+        @Override
+        public Stream<ValidationError> validate() {
+            return value().stream()
+                    .flatMap(SimpleType::validate);
         }
 
-        static MiddleNames of(List<MiddleName> value) {
-            return new MN() {
+        public static MiddleNames empty() {
+            return new MiddleNames() {
+                @Override
+                public List<MiddleName> value() {
+                    return new ArrayList<>();
+                }
+            };
+        }
+
+        public static MiddleNames of(List<MiddleName> value) {
+            requireNonNull(value);
+            return new MiddleNames() {
                 @Override
                 public List<MiddleName> value() {
                     return value;
-                }
-
-                @Override
-                public Stream<ValidationError> validate() {
-                    return value.stream()
-                            .flatMap(SimpleType::validate);
                 }
             };
         }
     }
 
-    interface Age extends IntegerType {
-        abstract class A extends Value implements Age {
-        }
+    abstract class Age extends Value<SimpleType<Integer>> implements IntegerType {
 
-        static Age of(Integer value) {
-            return new A() {
+        public static Age of(Integer value) {
+            requireNonNull(value);
+            return new Age() {
                 @Override
                 public Integer value() {
                     return value;
@@ -181,6 +194,7 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
 
                 @Override
                 public Stream<ValidationError> validate() {
+                    System.out.println("validating");
                     return value < 5 ?
                             Stream.of(new ValidationError("Age must be more than 4", ErrorCode.of(3))) :
                             Stream.empty();
@@ -189,15 +203,14 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         }
     }
 
-    interface EmailAddress extends StringType {
-        abstract class EA extends Value implements EmailAddress {
-            private final static String MAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-            protected final static Pattern PATTERN = Pattern.compile(MAIL_REGEX);
-        }
+    abstract class EmailAddress extends Value<SimpleType<String>> implements StringType {
+        private final static String MAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        private final static Pattern PATTERN = Pattern.compile(MAIL_REGEX);
 
-        static EmailAddress of(String value) {
-            return new EA() {
+        public static EmailAddress of(String value) {
+            requireNonNull(value);
+            return new EmailAddress() {
                 @Override
                 public String value() {
                     return value;
@@ -213,17 +226,16 @@ public interface Person extends ToString<Person>, EqualsHashcode<Person> {
         }
     }
 
-    interface Password extends ByteArrayType {
-        abstract class P extends Value implements Password {
-            final byte[] value;
+    abstract class Password extends Value<SimpleType<byte[]>> implements ByteArrayType {
+        final byte[] value;
 
-            protected P(byte[] value) {
-                this.value = value;
-            }
+        protected Password(byte[] value) {
+            this.value = value;
         }
 
-        static Password of(byte[] value) {
-            return new P(value.clone()) {
+        public static Password of(byte[] value) {
+            requireNonNull(value);
+            return new Password(value.clone()) {
                 @Override
                 public byte[] value() {
                     return this.value;

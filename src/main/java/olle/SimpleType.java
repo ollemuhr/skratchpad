@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 /**
  *
  */
-public interface SimpleType<T> extends ToString, EqualsHashcode {
+public interface SimpleType<T> extends ToString<SimpleType<T>>, EqualsHashcode<SimpleType<T>> {
 
     T value();
 
@@ -16,7 +16,7 @@ public interface SimpleType<T> extends ToString, EqualsHashcode {
     }
 
     @Override
-    default Stream<Function<SimpleType, T>> props() {
+    default Stream<Function<SimpleType<T>, ?>> props() {
         return Stream.of(SimpleType<T>::value);
     }
 

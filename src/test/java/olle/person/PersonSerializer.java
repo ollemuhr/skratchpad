@@ -12,6 +12,7 @@ import olle.proto.PersonProto.PersonMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +45,7 @@ public class PersonSerializer implements StreamSerializer<Person> {
                 FirstName.of(p.getFirstName()),
                 LastName.of(p.getLastName()),
                 MiddleNames.of(middleNames(p.getMiddleNameList())),
-                Age.of(p.getAge()),
+                Optional.ofNullable(p.getAge()).map(Age::of),
                 Password.of(p.getPassword().toByteArray()),
                 EmailAddress.of(p.getEmailAddress()));
     }
@@ -54,7 +55,7 @@ public class PersonSerializer implements StreamSerializer<Person> {
                 .setFirstName(p.firstName().value())
                 .setLastName(p.lastName().value())
                 .addAllMiddleName(middleNames(p.middleNames().value()))
-                .setAge(p.age().value())
+                .setAge(p.age().orElse(null).value())
                 .setEmailAddress(p.emailAddress().value())
                 .setPassword(ByteString.copyFrom(p.password().value())).build();
     }

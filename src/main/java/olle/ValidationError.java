@@ -30,7 +30,7 @@ public class ValidationError {
     }
 
     public interface ErrorCode extends IntegerType {
-        abstract class EC extends Value implements ErrorCode {}
+        abstract class EC extends Value<SimpleType<Integer>> implements ErrorCode {}
         static ErrorCode of(Integer value) {
             return new EC() {
                 @Override

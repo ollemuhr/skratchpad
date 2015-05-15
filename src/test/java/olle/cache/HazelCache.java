@@ -33,15 +33,15 @@ public class HazelCache {
      *
      * @param name
      */
-    public Cache<String, Person> initCache(String name, CacheManager cacheManager) {
-        Cache<String, Person> cache = cacheManager.getCache(name, String.class, Person.class);
+    public <K,V> Cache<K, V>  initCache(String name, CacheManager cacheManager, Class<K> keyClass, Class<V> valueClass) {
+        Cache<K, V> cache = cacheManager.getCache(name, keyClass, valueClass);
         if (cache != null)
             return cache;
         //configure the cache
-        MutableConfiguration<String, Person> config = new MutableConfiguration<>();
+        MutableConfiguration<K, V> config = new MutableConfiguration<>();
 
         config.setStoreByValue(true)
-                .setTypes(String.class, Person.class)
+                .setTypes(keyClass, valueClass)
                 .setExpiryPolicyFactory(AccessedExpiryPolicy.factoryOf(Duration.TEN_MINUTES))
                 .setStatisticsEnabled(false);
 
