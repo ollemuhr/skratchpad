@@ -92,7 +92,7 @@ public class ZipWithIndex {
     @Test
     public void _5() {
         final Query query = new Query();
-        final List<String> values = labels.stream().flatMap(label -> Arrays.<String>asList(label._1(), label._2(), "EN").stream()).collect(Collectors.toList());
+        final List<String> values = labels.stream().flatMap(label -> Stream.of(label._1(), label._2(), "EN")).collect(Collectors.toList());
 
         IntStream.range(0, values.size())
                 .forEach(i -> {
