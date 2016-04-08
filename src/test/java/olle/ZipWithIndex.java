@@ -81,10 +81,7 @@ public class ZipWithIndex {
 
         final Stream<String> values = labels.stream().flatMap(label -> Stream.of(label._1(), label._2(), "EN"));
 
-        zipWithIndex(values)
-                .forEach(pair -> {
-                    query.setParameter(pair._1() + 1, pair._2());
-                });
+        zipWithIndex(values).forEach(pair -> query.setParameter(pair._1() + 1, pair._2()));
 
         assertEquals(expected, query.map);
     }
@@ -94,10 +91,7 @@ public class ZipWithIndex {
         final Query query = new Query();
         final List<String> values = labels.stream().flatMap(label -> Stream.of(label._1(), label._2(), "EN")).collect(Collectors.toList());
 
-        IntStream.range(0, values.size())
-                .forEach(i -> {
-                    query.setParameter(i +  1, values.get(i));
-                });
+        IntStream.range(0, values.size()).forEach(i -> query.setParameter(i + 1, values.get(i)));
 
         assertEquals(expected, query.map);
     }
@@ -147,9 +141,8 @@ public class ZipWithIndex {
 
 
     public static <A> Stream<Pair<Integer, A>> zipWithIndex(final Stream<? extends A> stream) {
-        final List<A> list = stream.collect(Collectors.toList());
-
-        return zip(IntStream.range(0, list.size()).boxed(), list.stream(), Pair::of);
+        final Stream<Integer> ints = IntStream.iterate(0, i -> i + 1).boxed();
+        return zip(ints, stream, Pair::of);
     }
 
     /**
