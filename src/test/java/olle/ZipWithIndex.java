@@ -102,6 +102,16 @@ public class ZipWithIndex {
         assertEquals(expected, query.map);
     }
 
+    @Test
+    public void _6() {
+
+        final Stream<String> values = labels.stream().flatMap(label -> Stream.of(label._1(), label._2(), "EN"));
+
+        final Query query = zipWithIndex(values).reduce(new Query(), (q, pair) -> q.setParameter(pair._1() + 1, pair._2()), (q1, q2) -> q1);
+
+        assertEquals(expected, query.map);
+    }
+
     interface Pair<A, B> {
 
         static <A, B> Pair<A, B> of(final A a, final B b) {
@@ -128,8 +138,9 @@ public class ZipWithIndex {
     class Query {
         private Map<Integer, String> map = new HashMap<>();
 
-        void setParameter(int index, String value) {
+        Query setParameter(int index, String value) {
             map.put(index, value);
+            return this;
         }
     }
 
