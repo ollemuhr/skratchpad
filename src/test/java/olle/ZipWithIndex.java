@@ -79,7 +79,7 @@ public class ZipWithIndex {
     public void _4() {
         final Query query = new Query();
 
-        final Stream<String> values = labels.stream().flatMap(label -> Arrays.<String>asList(label._1(), label._2(), "EN").stream());
+        final Stream<String> values = labels.stream().flatMap(label -> Stream.of(label._1(), label._2(), "EN"));
 
         zipWithIndex(values)
                 .forEach(pair -> {
