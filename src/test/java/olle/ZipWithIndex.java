@@ -50,7 +50,7 @@ public class ZipWithIndex {
         final Query query = new Query();
         final AtomicInteger i = new AtomicInteger(1);
 
-        labels.stream().forEach(label -> {
+        labels.forEach(label -> {
             query.setParameter(i.getAndIncrement(), label._1());
             query.setParameter(i.getAndIncrement(), label._2());
             query.setParameter(i.getAndIncrement(), "EN");
@@ -137,7 +137,6 @@ public class ZipWithIndex {
             return this;
         }
     }
-
 
 
     public static <A> Stream<Pair<Integer, A>> zipWithIndex(final Stream<? extends A> stream) {
